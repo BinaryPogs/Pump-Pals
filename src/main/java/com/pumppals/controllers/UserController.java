@@ -5,9 +5,10 @@ import com.pumppals.models.User;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class UserController {
-    private static Map<String, User> users = new HashMap<>();
+    private static Map<UUID, User> users = new HashMap<>();
     public static void getAllUsers(Context ctx) {
         ctx.json(users.values());
     }
@@ -18,25 +19,52 @@ public class UserController {
     }
 
     public static void getUser(Context ctx) {
-        String id = ctx.pathParam("id");
-        User user = users.get(id);
-        if (user != null) {
-            ctx.json(user);
-        } else {
-            ctx.status(404).result("User not found");
+        try {
+            String idString = ctx.pathParam("id");
+            UUID id = UUID.fromString(idString);
+
+            User user = users.get(id);
+            if (user != null) {
+                ctx.json(user);
+            } else {
+                ctx.status(404).result("User not found");
+            }
+        } catch (IllegalArgumentException e) {
+            ctx.status(400).result("Invalid UUID format");
+        }
+    }
+    public static void updateUser(Context ctx) {
+        try {
+            String idString = ctx.pathParam("id");
+            UUID id = UUID.fromString(idString);
+
+            User updatedUser = ctx.bodyAsClass(User.class);
+            updatedUser.setId(id);
+
+            if (users.containsKey(id)) {
+                users.put(id, updatedUser);
+                ctx.json(updatedUser);
+            } else {
+                ctx.status(404).result("User not found");
+            }
+        } catch (IllegalArgumentException e) {
+            ctx.status(400).result("Invalid UUID format");
         }
     }
 
-    public static void updateUser(Context ctx) {
-        String id = ctx.pathParam("id");
-        User updatedUser = ctx.bodyAsClass(User.class);
-        users.put(id, updatedUser);
-        ctx.json(updatedUser);
-    }
-
     public static void deleteUser(Context ctx) {
-        String id = ctx.pathParam("id");
-        users.remove(id);
-        ctx.status(204).result("");
+        try {
+            String idString = ctx.pathParam("id");
+            UUID id = UUID.fromString(idString);
+
+            if (users.containsKey(id)) {
+                users.remove(id);
+                ctx.status(204).result("");
+            } else {
+                ctx.status(404).result("User not found");
+            }
+        } catch (IllegalArgumentException e) {
+            ctx.status(400).result("Invalid UUID format");
+        }
     }
 }

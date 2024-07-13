@@ -1,52 +1,22 @@
-# Gradle
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Hibernate
+hibernate.cfg.xml
 
-# IntelliJ IDEA
-.idea/
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-# Eclipse
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-# NetBeans
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-# VS Code
-.vscode/
-
-# Mac OS
-.DS_Store
-
-# Windows
-Thumbs.db
-
-# Java
-*.class
+# Logs
 *.log
-*.ctxt
-.mtj.tmp/
+
+# IntelliJ IDEA (additional)
+.idea/
+
+# Gradle (additional)
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# Java (additional)
+*.class
+
+# Package Files
 *.jar
 *.war
 *.nar
@@ -54,56 +24,12 @@ Thumbs.db
 *.zip
 *.tar.gz
 *.rar
+
+# Ignore build directories
+/build/
+/*/build/
+/*/build/distributions/
+
+# virtual machine crash logs
 hs_err_pid*
 replay_pid*
-
-# Next.js
-.next/
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# Environment variables
-.env
-.env*.local
-
-# Logs
-logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Coverage directory used by tools like istanbul
-coverage
-
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional stylelint cache
-.stylelintcache
-
-# Output of 'npm pack'
-*.tgz
-
-# Misc
-*.swp
-.DS_Store
