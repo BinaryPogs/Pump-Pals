@@ -1,25 +1,45 @@
 package com.pumppals.models;
 
+import jakarta.persistence.*;
+import java.util.UUID;
+
+@Entity
+@Table(name = "challenges")
 public class Challenge {
-    private String id;
-    private String userId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
+    @Column(nullable = false)
     private String exercise;
+
+    @Column(nullable = false)
     private int count;
 
-    // Getters and Setters
-    public String getId() {
+    public Challenge() {}
+
+    public Challenge(UUID userId, String exercise, int count) {
+        this.userId = userId;
+        this.exercise = exercise;
+        this.count = count;
+    }
+
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 
