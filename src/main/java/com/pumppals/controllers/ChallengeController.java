@@ -1,12 +1,13 @@
 package com.pumppals.controllers;
 
+import com.pumppals.annotations.RouteController;
 import io.javalin.http.Context;
 import com.pumppals.models.Challenge;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
+@RouteController
 public class ChallengeController {
     private static Map<UUID, Challenge> challenges = new HashMap<>();
 
