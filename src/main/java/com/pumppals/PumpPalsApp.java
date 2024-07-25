@@ -1,11 +1,21 @@
 package com.pumppals;
 
+import com.pumppals.database.DatabaseManager;
 import io.javalin.Javalin;
 
 import static com.pumppals.routers.Router.configureRoutes;
 
 public class PumpPalsApp {
     public static void main(String[] args) {
+        try {
+            DatabaseManager.initializeDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        } finally {
+            // Ensure shutdown is called when the application exits
+            Runtime.getRuntime().addShutdownHook(new Thread(DatabaseManager::shutdown));
+        }
         Javalin app = Javalin.create(config -> {
             config.defaultContentType = "application/json";
         }).start(7000);
