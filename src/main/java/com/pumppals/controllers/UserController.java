@@ -1,12 +1,12 @@
 package com.pumppals.controllers;
 
 import com.pumppals.annotations.RouteController;
+import com.pumppals.annotations.Route;
 import com.pumppals.dao.UserDao;
 import io.javalin.http.Context;
 import com.pumppals.models.User;
 
 import javax.inject.Inject;
-import java.sql.SQLException;
 import java.util.UUID;
 
 @RouteController
@@ -18,21 +18,24 @@ public class UserController {
         this.userDao = userDao;
     }
 
+    @Route(path = "/users", method = "GET")
     public void getAllUsers(Context ctx) {
         ctx.json(userDao.getAllUsers());
     }
 
+    @Route(path = "/users", method = "POST")
     public void addUser(Context ctx) {
         User user = ctx.bodyAsClass(User.class);
-        user.setId(UUID.randomUUID()); // Set a new UUID for the user
+        user.setId(UUID.randomUUID());
         try {
             var createdUser = userDao.createUser(user);
             ctx.status(201).json(createdUser);
-        } catch (SQLException e) {
-            ctx.status(500).result("Error creating user");
+        } catch (RuntimeException e) {  // Use RuntimeException if your DAO now throws unchecked exceptions
+            ctx.status(500).result("Error creating user: " + e.getMessage());
         }
     }
 
+    @Route(path = "/users/{id}", method = "GET")
     public void getUser(Context ctx) {
         String idString = ctx.pathParam("id");
         try {
@@ -41,11 +44,12 @@ public class UserController {
                     ctx::json,
                     () -> ctx.status(404).result("User not found")
             );
-        } catch (IllegalArgumentException | SQLException e) {
-            ctx.status(400).result("Invalid UUID format or error fetching user");
+        } catch (IllegalArgumentException e) {
+            ctx.status(400).result("Invalid UUID format");
         }
     }
 
+    @Route(path = "/users/{id}", method = "PUT")
     public void updateUser(Context ctx) {
         String idString = ctx.pathParam("id");
         try {
@@ -59,11 +63,12 @@ public class UserController {
             } else {
                 ctx.status(404).result("User not found");
             }
-        } catch (IllegalArgumentException | SQLException e) {
-            ctx.status(400).result("Invalid UUID format or error updating user");
+        } catch (IllegalArgumentException e) {
+            ctx.status(400).result("Invalid UUID format");
         }
     }
 
+    @Route(path = "/users/{id}", method = "DELETE")
     public void deleteUser(Context ctx) {
         String idString = ctx.pathParam("id");
         try {
@@ -71,12 +76,12 @@ public class UserController {
 
             if (userDao.getUserById(id).isPresent()) {
                 userDao.deleteUser(id);
-                ctx.status(204).result("");
+                ctx.status(204);
             } else {
                 ctx.status(404).result("User not found");
             }
-        } catch (IllegalArgumentException | SQLException e) {
-            ctx.status(400).result("Invalid UUID format or error deleting user");
+        } catch (IllegalArgumentException e) {
+            ctx.status(400).result("Invalid UUID format");
         }
     }
 }

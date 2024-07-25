@@ -1,74 +1,63 @@
 package com.pumppals.controllers;
 
 import com.pumppals.annotations.RouteController;
+import com.pumppals.annotations.Route;
+import com.pumppals.dao.ChallengeDao;
 import io.javalin.http.Context;
 import com.pumppals.models.Challenge;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.inject.Inject;
 import java.util.UUID;
+
 @RouteController
 public class ChallengeController {
-    private static Map<UUID, Challenge> challenges = new HashMap<>();
+    private final ChallengeDao challengeDao;
 
-    public static void getAllChallenges(Context ctx) {
-        ctx.json(challenges.values());
+    @Inject
+    public ChallengeController(ChallengeDao challengeDao) {
+        this.challengeDao = challengeDao;
     }
 
-    public static void addChallenge(Context ctx) {
+    @Route(path = "/challenges", method = "GET")
+    public void getAllChallenges(Context ctx) {
+        ctx.json(challengeDao.getAllChallenges());
+    }
+
+    @Route(path = "/challenges", method = "POST")
+    public void addChallenge(Context ctx) {
         Challenge challenge = ctx.bodyAsClass(Challenge.class);
-        challenges.put(challenge.getId(), challenge);
-        ctx.status(201).json(challenge);
+        Challenge createdChallenge = challengeDao.createChallenge(challenge);
+        ctx.status(201).json(createdChallenge);
     }
 
-    public static void getChallenge(Context ctx) {
-        try {
-            String idString = ctx.pathParam("id");
-            UUID id = UUID.fromString(idString);
-
-            Challenge challenge = challenges.get(id);
-            if (challenge != null) {
-                ctx.json(challenge);
-            }
-            else {
-                ctx.status(404).result("Challenge not found");
-            }
-        } catch (IllegalArgumentException e) {
-            ctx.status(400).result("Invalid UUID format");
-        }
+    @Route(path = "/challenges/{id}", method = "GET")
+    public void getChallenge(Context ctx) {
+        String idString = ctx.pathParam("id");
+        UUID id = UUID.fromString(idString);
+        challengeDao.getChallengeById(id).ifPresentOrElse(
+                ctx::json,
+                () -> ctx.status(404).result("Challenge not found")
+        );
     }
 
-    public static void updateChallenge(Context ctx) {
-        try {
-            String idString = ctx.pathParam("id");
-            UUID id = UUID.fromString(idString);
-
-            Challenge updatedChallenge = ctx.bodyAsClass(Challenge.class);
-            updatedChallenge.setId(id);
-
-            if (challenges.containsKey(id)) {
-                challenges.put(id, updatedChallenge);
-                ctx.json(updatedChallenge);
-            } else {
-                ctx.status(404).result("User not found");
-            }
-        } catch (IllegalArgumentException e) {
-            ctx.status(400).result("Invalid UUID format");
-        }
+    @Route(path = "/challenges/{id}", method = "PUT")
+    public void updateChallenge(Context ctx) {
+        String idString = ctx.pathParam("id");
+        UUID id = UUID.fromString(idString);
+        Challenge updatedChallenge = ctx.bodyAsClass(Challenge.class);
+        updatedChallenge.setId(id);
+        challengeDao.updateChallenge(updatedChallenge);
+        ctx.json(updatedChallenge);
     }
-    public static void deleteChallenge(Context ctx) {
-        try {
-            String idString = ctx.pathParam("id");
-            UUID id = UUID.fromString(idString);
 
-            if(challenges.containsKey(id)) {
-                challenges.remove(id);
-                ctx.status(204).result("");
-            } else {
-                ctx.status(404).result("Challenge not found");
-            }
-        } catch (IllegalArgumentException e) {
-            ctx.status(400).result("Invalid UUID format");
+    @Route(path = "/challenges/{id}", method = "DELETE")
+    public void deleteChallenge(Context ctx) {
+        String idString = ctx.pathParam("id");
+        UUID id = UUID.fromString(idString);
+        if (challengeDao.deleteChallenge(id)) {
+            ctx.status(204);
+        } else {
+            ctx.status(404).result("Challenge not found");
         }
     }
 }

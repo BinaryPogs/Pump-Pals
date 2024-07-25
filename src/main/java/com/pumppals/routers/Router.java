@@ -1,9 +1,9 @@
 package com.pumppals.routers;
 
 import com.pumppals.annotations.RouteController;
+import com.pumppals.annotations.Route;
 import com.google.inject.Injector;
 import io.javalin.Javalin;
-import io.javalin.apibuilder.ApiBuilder;
 import io.javalin.http.Handler;
 import org.reflections.Reflections;
 
@@ -20,17 +20,28 @@ public class Router {
             Object controllerInstance = injector.getInstance(controllerClass);
 
             for (Method method : controllerClass.getDeclaredMethods()) {
-                String routePath = "/" + method.getName().toLowerCase();
-                Handler handler = ctx -> method.invoke(controllerInstance, ctx);
+                Route routeAnnotation = method.getAnnotation(Route.class);
+                if (routeAnnotation != null) {
+                    String path = routeAnnotation.path();
+                    String httpMethod = routeAnnotation.method().toUpperCase();
+                    Handler handler = ctx -> method.invoke(controllerInstance, ctx);
 
-                if (method.getName().startsWith("get")) {
-                    app.get(routePath, handler);
-                } else if (method.getName().startsWith("post")) {
-                    app.post(routePath, handler);
-                } else if (method.getName().startsWith("put")) {
-                    app.put(routePath, handler);
-                } else if (method.getName().startsWith("delete")) {
-                    app.delete(routePath, handler);
+                    switch (httpMethod) {
+                        case "GET":
+                            app.get(path, handler);
+                            break;
+                        case "POST":
+                            app.post(path, handler);
+                            break;
+                        case "PUT":
+                            app.put(path, handler);
+                            break;
+                        case "DELETE":
+                            app.delete(path, handler);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unsupported HTTP method: " + httpMethod);
+                    }
                 }
             }
         }

@@ -21,12 +21,11 @@ public class ChallengeDao implements IChallengeDao {
             return TransactionManager.executeInTransaction(() -> {
                 Session session = DatabaseManager.getSessionFactory().getCurrentSession();
                 session.persist(challenge);
-                logger.info("Created new challenge with ID: {}", challenge.getId());
                 return challenge;
             });
         } catch (Exception e) {
             logger.error("Error creating challenge: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to create challenge", e);
+            throw new IllegalStateException("Failed to create challenge", e);
         }
     }
 
@@ -36,14 +35,11 @@ public class ChallengeDao implements IChallengeDao {
             return TransactionManager.executeInTransaction(() -> {
                 Session session = DatabaseManager.getSessionFactory().getCurrentSession();
                 Challenge challenge = session.get(Challenge.class, id);
-                if (challenge == null) {
-                    logger.warn("No challenge found with ID: {}", id);
-                }
                 return Optional.ofNullable(challenge);
             });
         } catch (Exception e) {
             logger.error("Error retrieving challenge with ID {}: {}", id, e.getMessage(), e);
-            throw new RuntimeException("Failed to retrieve challenge", e);
+            throw new IllegalStateException("Failed to retrieve challenge", e);
         }
     }
 
@@ -52,13 +48,11 @@ public class ChallengeDao implements IChallengeDao {
         try {
             return TransactionManager.executeInTransaction(() -> {
                 Session session = DatabaseManager.getSessionFactory().getCurrentSession();
-                List<Challenge> challenges = session.createQuery("FROM Challenge", Challenge.class).list();
-                logger.info("Retrieved {} challenges", challenges.size());
-                return challenges;
+                return session.createQuery("FROM Challenge", Challenge.class).list();
             });
         } catch (Exception e) {
             logger.error("Error retrieving all challenges: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to retrieve all challenges", e);
+            throw new IllegalStateException("Failed to retrieve all challenges", e);
         }
     }
 
@@ -68,11 +62,10 @@ public class ChallengeDao implements IChallengeDao {
             TransactionManager.executeInTransaction(() -> {
                 Session session = DatabaseManager.getSessionFactory().getCurrentSession();
                 session.merge(challenge);
-                logger.info("Updated challenge with ID: {}", challenge.getId());
             });
         } catch (Exception e) {
             logger.error("Error updating challenge with ID {}: {}", challenge.getId(), e.getMessage(), e);
-            throw new RuntimeException("Failed to update challenge", e);
+            throw new IllegalStateException("Failed to update challenge", e);
         }
     }
 
@@ -84,16 +77,14 @@ public class ChallengeDao implements IChallengeDao {
                 Challenge challenge = session.get(Challenge.class, id);
                 if (challenge != null) {
                     session.remove(challenge);
-                    logger.info("Deleted challenge with ID: {}", id);
                     return true;
                 } else {
-                    logger.warn("Attempted to delete non-existent challenge with ID: {}", id);
                     return false;
                 }
             });
         } catch (Exception e) {
             logger.error("Error deleting challenge with ID {}: {}", id, e.getMessage(), e);
-            throw new RuntimeException("Failed to delete challenge", e);
+            throw new IllegalStateException("Failed to delete challenge", e);
         }
     }
 }

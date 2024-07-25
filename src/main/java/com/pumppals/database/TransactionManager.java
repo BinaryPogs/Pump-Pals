@@ -8,16 +8,18 @@ import java.util.function.Supplier;
 public class TransactionManager
 {
     public static <T> T executeInTransaction(Supplier<T> action) {
-        try (Session session = DatabaseManager.getSessionFactory().openSession()) {
-            Transaction tx = session.beginTransaction();
-            try {
-                T result = action.get(); // This is where action is executed
-                tx.commit();
-                return result;
-            } catch (Exception ex){
-                tx.rollback();
-                throw ex;
-            }
+        Session session = DatabaseManager.getSessionFactory().getCurrentSession();
+        Transaction tx = null;
+        try {
+            tx = session.beginTransaction();
+            T result = action.get();
+            tx.commit();
+            return result;
+        } catch (RuntimeException e) {
+            if (tx != null && tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            if (session != null && session.isOpen()) session.close();
         }
     }
     public static void executeInTransaction(Runnable action) {
