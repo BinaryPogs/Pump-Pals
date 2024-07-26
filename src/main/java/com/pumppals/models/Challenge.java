@@ -1,5 +1,6 @@
 package com.pumppals.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,6 +33,10 @@ public class Challenge {
     private int durationDays;
 
     @Column(nullable = false)
+    private Integer count;
+
+    @Column(nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
     @OneToMany(mappedBy = "challenge")
@@ -86,7 +91,13 @@ public class Challenge {
     public void setDurationDays(int durationDays) {
         this.durationDays = durationDays;
     }
+    public Integer getCount() {
+        return count;
+    }
 
+    public void setCount(Integer count) {
+        this.count = count;
+    }
     public LocalDate getStartDate() {
         return startDate;
     }

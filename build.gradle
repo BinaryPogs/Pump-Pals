@@ -25,6 +25,7 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.4.12'
     implementation 'com.google.inject:guice:5.1.0'
     implementation 'org.reflections:reflections:0.10.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0'
 }
 
 test {

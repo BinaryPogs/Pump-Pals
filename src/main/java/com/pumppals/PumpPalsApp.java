@@ -7,7 +7,9 @@ import com.pumppals.database.DatabaseManager;
 import com.pumppals.injection.InjectorProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.pumppals.serialisation.JacksonConfig;
 import io.javalin.Javalin;
+import io.javalin.plugin.json.JavalinJackson;
 
 import static com.pumppals.routers.Router.configureRoutes;
 
@@ -25,6 +27,7 @@ public class PumpPalsApp {
 
         Javalin app = Javalin.create(config -> {
             config.defaultContentType = "application/json";
+            config.jsonMapper(new JavalinJackson(JacksonConfig.createObjectMapper()));
         }).start(7000);
 
         // Handle CORS

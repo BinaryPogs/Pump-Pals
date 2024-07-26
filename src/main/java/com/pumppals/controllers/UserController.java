@@ -2,9 +2,16 @@ package com.pumppals.controllers;
 
 import com.pumppals.annotations.RouteController;
 import com.pumppals.annotations.Route;
+import com.pumppals.controllers.response.ErrorResponse;
+import com.pumppals.dao.ChallengeDao;
 import com.pumppals.dao.UserDao;
+import com.pumppals.dao.exceptions.DatabaseException;
+import com.pumppals.dao.exceptions.UserAlreadyExistsException;
+import com.pumppals.dao.exceptions.ValidationException;
 import io.javalin.http.Context;
 import com.pumppals.models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.UUID;
@@ -12,6 +19,7 @@ import java.util.UUID;
 @RouteController
 public class UserController {
     private final UserDao userDao;
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Inject
     public UserController(UserDao userDao) {
@@ -25,13 +33,17 @@ public class UserController {
 
     @Route(path = "/users", method = "POST")
     public void addUser(Context ctx) {
-        User user = ctx.bodyAsClass(User.class);
-        user.setId(UUID.randomUUID());
         try {
-            var createdUser = userDao.createUser(user);
+            User user = ctx.bodyAsClass(User.class);
+            User createdUser = userDao.createUser(user);
             ctx.status(201).json(createdUser);
-        } catch (RuntimeException e) {  // Use RuntimeException if your DAO now throws unchecked exceptions
-            ctx.status(500).result("Error creating user: " + e.getMessage());
+        } catch (ValidationException e) {
+            ctx.status(400).json(new ErrorResponse(e.getErrors()));
+        } catch (UserAlreadyExistsException e) {
+            ctx.status(409).json(new ErrorResponse(e.getMessage()));
+        } catch (DatabaseException e) {
+            ctx.status(500).json(new ErrorResponse("An unexpected error occurred"));
+            logger.error("Database error while creating user", e);
         }
     }
 
